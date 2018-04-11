@@ -102,3 +102,21 @@ void displayText(){
   Serial.println(velocity);
   Serial.println(distance);
 }
+if (velocity >=20){
+   digitalWrite(10, HIGH);
+  }
+  else {
+      digitalWrite(10, LOW);
+  }
+  if (velocity >=30){
+   digitalWrite(9, HIGH);
+  }
+  else {
+      digitalWrite(9, LOW);
+  }
+  if (velocity >=40){
+   digitalWrite(8, HIGH);
+  }
+  else {
+      digitalWrite(8, LOW);
+  }
