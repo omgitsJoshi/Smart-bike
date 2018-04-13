@@ -2,6 +2,7 @@
 #include <dht.h>
 #define reed A0
 #define DHT11_PIN 7
+const int FSR_PIN = A1; 
 
 dht DHT;
 
@@ -13,13 +14,20 @@ float radius = 0.00034;
 float circumference;
 float velocity = 0.00;
 float distance = 0.00;
+const float VCC = 4.98;
+const float R_DIV = 3230.0;
 
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
 void setup() {
-  
+  pinMode(FSR_PIN, INPUT);
   lcd.begin(8, 2);
   Serial.begin(9600);
+ pinMode(8, OUTPUT);  
+pinMode(9, OUTPUT);  
+pinMode(10, OUTPUT);  
+  
+
 
   currentDebounceTicks = maxDebounceTicks;
   circumference = 2 * 3.14 * radius;
@@ -38,19 +46,9 @@ void setup() {
 }
 
 void loop() {
-  displayText();
-  delay(2000);
-  int chk = DHT.read11(DHT11_PIN);
-  lcd.setCursor(0,0); 
-  lcd.print("Temp: ");
-  lcd.print(DHT.temperature);
-  lcd.print((char)223);
-  lcd.print("C");
-  lcd.setCursor(0,1);
-  lcd.print("Humidity: ");
-  lcd.print(DHT.humidity);
-  lcd.print("%");
-  delay(2000);
+   displayText();
+   force();
+   temp();
 }
 
 ISR(TIMER1_COMPA_vect) {
@@ -101,7 +99,6 @@ void displayText(){
 
   Serial.println(velocity);
   Serial.println(distance);
-}
 if (velocity >=20){
    digitalWrite(10, HIGH);
   }
@@ -120,3 +117,51 @@ if (velocity >=20){
   else {
       digitalWrite(8, LOW);
   }
+}
+
+void force(){
+  int fsrADC = analogRead(FSR_PIN);
+
+  if (fsrADC != 0) 
+  {
+
+    float fsrV = fsrADC * VCC / 1023.0;
+  
+    float fsrR = R_DIV * (VCC / fsrV - 1.0);
+    Serial.println("Resistance: " + String(fsrR) + " ohms");
+ 
+    float force;
+    float fsrG = 1.0 / fsrR; 
+  
+    if (fsrR <= 600) 
+      force = (fsrG - 0.00075) / 0.00000032639;
+    else
+      force =  fsrG / 0.000000642857;
+    Serial.println("Force: " + String(force) + " g");
+    Serial.println();
+
+    delay(500);
+  }
+  else
+  {
+   
+  }
+}
+void temp(){
+    
+  int chk = DHT.read11(DHT11_PIN);
+  lcd.setCursor(6,0); 
+  lcd.print("T: ");
+  lcd.print(DHT.temperature);
+  lcd.print((char)223);
+  lcd.print("C");
+  lcd.setCursor(6,1);
+  lcd.print("H: ");
+  lcd.print(DHT.humidity);
+  lcd.print("%");
+  delay(5000);
+}
+
+
+
+  
